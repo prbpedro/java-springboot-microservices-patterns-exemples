@@ -46,7 +46,6 @@ public class DumbEntityServiceIntegrationTests {
                 Assert.notNull(dto, "Returned entity should not be null");
                 Assert.notNull(dto.getId(), "Returned entity should not be null");
             })
-
             .verifyComplete();
     }
 
