@@ -1,5 +1,5 @@
 # javaspringbootreactiveapiexemple
-This project exemplifies the use of R2DBC in reactive Springboot applications with multiple read and write database configurations.
+This project exemplifies the use of R2DBC in reactive Springboot applications with multiple read and write databases configurations.
 The following technologies where used to implement the solution:
 - Java 11
 - Gradle 7.1
