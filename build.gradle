@@ -1,0 +1,78 @@
+plugins {
+	id 'com.avast.gradle.docker-compose' version "0.14.0"
+	id 'org.springframework.boot' version '2.5.4'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'org.asciidoctor.convert' version '1.5.8'
+	id 'java'
+}
+
+group = 'com.github.prbpedro'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
+}
+
+dependencies {
+	//Spring
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	//Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//mysql r2dbc
+	runtimeOnly 'dev.miku:r2dbc-mysql'
+	runtimeOnly 'mysql:mysql-connector-java'
+
+	//test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+}
+
+dockerCompose {
+
+	runAppInfrastructure {
+		useComposeFiles = ['docker-compose.yml']
+		captureContainersOutput = true
+		removeContainers = true
+	}
+}
+
+def defaultEnvironmentVariables = ["JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_SERVICE_HOST": "localhost",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_SERVICE_PORT": "3306",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_SERVICE_DATABASE": "dumb_db",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_READONLY_SERVICE_USER": "readonlyuser",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_READONLY_SERVICE_PASSWORD": "password",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_USER": "root",
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_PASSWORD": "password"]
+
+bootRun {
+	environment = defaultEnvironmentVariables
+}
+
+test {
+	environment = defaultEnvironmentVariables
+
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+}
+
+asciidoctor {
+	inputs.dir snippetsDir
+	dependsOn test
+}
