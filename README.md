@@ -1,5 +1,5 @@
 # javaspringbootreactiveapiexemple
-This project exemplifies the use of R2DBC in reactive Springboot applications with multiple read and write databases configurations.
+This project exemplifies the use of R2DBC in reactive Springboot applications with multiple (read only and write) databases configurations.
 The following technologies where used to implement the solution:
 - Java 11
 - Gradle 7.1
@@ -24,6 +24,8 @@ After then infrastructure initialization you can run the integration tests by si
 ```
 
 The tests ensure that the DumbEntityReadOnlyRepository class does not have write access granted to the database and that the DumbEntityWriteRepository class does have.
+
+This can be achieved by configuring multiple connection factories configured through the R2dbcReadonlyConfiguration and R2dbcWriteConfiguration classes.
 
 To destroy the resources created in the infrastructure initialization run the following command:
 ```bash
