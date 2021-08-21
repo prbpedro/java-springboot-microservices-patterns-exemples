@@ -5,9 +5,8 @@ import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.readonl
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessResourceFailureException;
 import reactor.test.StepVerifier;
-
-import javax.naming.OperationNotSupportedException;
 
 @SpringBootTest
 public class DumbEntityReadOnlyRepositoryIntegrationTest {
@@ -19,8 +18,9 @@ public class DumbEntityReadOnlyRepositoryIntegrationTest {
     public void insertTest() {
 
         StepVerifier
-            .create( repository.save(new DumbEntity()))
-            .expectError(OperationNotSupportedException.class);
+            .create(repository.save(DumbEntity.builder().value(1L).build()))
+            .expectError(DataAccessResourceFailureException.class)
+            .verify();
 
     }
 }

@@ -11,21 +11,21 @@ The following technologies where used to implement the solution:
 
 ## Running the integration tests
 
-To initialize the infrastructure needed to the tests execute the folloing command:
+To initialize the infrastructure needed to the tests execute the following command:
 ```bash
 ./gradlew runAppInfrastructureComposeUp
 ```
-This will create an Instance of MySql with one database named dumb_db, one table named DumbEntity with only only columnd, an auto generated id. This is done by running the scripts / schema.sql file.
+This will create an Instance of MySql with one database named dumb_db, one table named DumbEntity with two columns, an auto generated id and a value column. This is done by running the scripts / schema.sql file.
 The initialization process will also create a read only user by running the scripts / createreadonlyuser.sql file.
 
-After then infrastructure initialization you can run the integration tests by simple running the folloing command:
+After then infrastructure initialization you can run the integration tests by simple running the following command:
 ```bash
 ./gradlew build
 ```
 
-The tests ensures that the DumbEntityReadOnlyRepository class does not have write access to the database and that the DumbEntityWriteRepository class does have.
+The tests ensure that the DumbEntityReadOnlyRepository class does not have write access granted to the database and that the DumbEntityWriteRepository class does have.
 
-To destroy the resources created in the infrastructure initialization run the folloing command:
+To destroy the resources created in the infrastructure initialization run the following command:
 ```bash
 ./gradlew runAppInfrastructureComposeDown
 ```

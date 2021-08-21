@@ -23,7 +23,8 @@ public enum EnvironmentVariables {
             MYSQL_READONLY_PASSWORD.v +
             "@" + MYSQL_HOST.v +
             ":" + MYSQL_PORT.v +
-            "/" + MYSQL_DATABASE.v;
+            "/" + MYSQL_DATABASE.v +
+            "?sslMode=DISABLED";
     }
 
     public static String getWriteR2dbcMysqlUrl() {
@@ -33,6 +34,7 @@ public enum EnvironmentVariables {
             MYSQL_WRITE_PASSWORD.v +
             "@" + MYSQL_HOST.v +
             ":" + MYSQL_PORT.v +
-            "/" + MYSQL_DATABASE.v;
+            "/" + MYSQL_DATABASE.v +
+            "?sslMode=DISABLED";
     }
 }
