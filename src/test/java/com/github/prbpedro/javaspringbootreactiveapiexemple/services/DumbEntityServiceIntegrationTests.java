@@ -1,6 +1,6 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDto;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class DumbEntityServiceIntegrationTests {
     @Test
     public void saveTest() {
         StepVerifier
-            .create(service.save(DumbEntityDto.builder().value(1L).build()))
+            .create(service.save(DumbEntityDTO.builder().value(1L).build()))
             .assertNext(dto -> {
                 Assert.notNull(dto, "Returned entity should not be null");
                 Assert.notNull(dto.getId(), "Returned entity should not be null");
@@ -39,8 +39,8 @@ public class DumbEntityServiceIntegrationTests {
         StepVerifier
             .create(
                 service
-                    .save(DumbEntityDto.builder().value(1L).build())
-                    .flatMap(dumbEntityDto -> service.get(dumbEntityDto.getId()))
+                    .save(DumbEntityDTO.builder().value(1L).build())
+                    .flatMap(dumbEntityDTO -> service.get(dumbEntityDTO.getId()))
             )
             .assertNext(dto -> {
                 Assert.notNull(dto, "Returned entity should not be null");
@@ -54,8 +54,8 @@ public class DumbEntityServiceIntegrationTests {
         StepVerifier
             .create(
                 service
-                    .save(DumbEntityDto.builder().value(1L).build())
-                    .flatMap(dumbEntityDto -> service.delete(dumbEntityDto))
+                    .save(DumbEntityDTO.builder().value(1L).build())
+                    .flatMap(dumbEntityDTO -> service.delete(dumbEntityDTO))
                     .flatMap(dumbEntityDto -> service.get(1L))
             )
             .expectNextCount(0)
@@ -67,8 +67,8 @@ public class DumbEntityServiceIntegrationTests {
         StepVerifier
             .create(
                 service
-                    .save(DumbEntityDto.builder().value(1L).build())
-                    .map(dumbEntityDto -> service.listAll())
+                    .save(DumbEntityDTO.builder().value(1L).build())
+                    .map(dumbEntityDTO -> service.listAll())
             )
             .expectNextCount(1)
             .verifyComplete();

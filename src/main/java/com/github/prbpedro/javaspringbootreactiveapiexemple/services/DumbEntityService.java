@@ -1,6 +1,6 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDto;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntity;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import lombok.AllArgsConstructor;
@@ -19,21 +19,21 @@ public class DumbEntityService {
     @Autowired
     private final DumbEntityWriteRepository readRepository;
 
-    public Mono<DumbEntityDto> save(DumbEntityDto dto) {
-        return writeRepository.save(dto.getEntity()).flatMap(dumbEntity -> Mono.just(dumbEntity.getDto()));
+    public Mono<DumbEntityDTO> save(DumbEntityDTO dto) {
+        return writeRepository.save(dto.buildEntity()).map(DumbEntity::buildDto);
     }
 
-    public Mono<Void> delete(DumbEntityDto dto) {
-        return writeRepository.delete(dto.getEntity());
+    public Mono<Void> delete(DumbEntityDTO dto) {
+        return writeRepository.delete(dto.buildEntity());
     }
 
-    public Mono<DumbEntityDto> get(Long id) {
+    public Mono<DumbEntityDTO> get(Long id) {
         return readRepository.findById(id)
-            .flatMap(dumbEntity -> Mono.just(dumbEntity.getDto()));
+            .flatMap(dumbEntity -> Mono.just(dumbEntity.buildDto()));
     }
 
-    public Flux<DumbEntityDto> listAll() {
+    public Flux<DumbEntityDTO> listAll() {
         return readRepository.findAll()
-            .flatMap(dumbEntity -> Mono.just(dumbEntity.getDto()));
+            .flatMap(dumbEntity -> Mono.just(dumbEntity.buildDto()));
     }
 }

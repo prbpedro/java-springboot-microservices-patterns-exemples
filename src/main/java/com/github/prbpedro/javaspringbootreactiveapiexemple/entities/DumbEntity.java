@@ -1,6 +1,6 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.entities;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDto;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,7 +19,7 @@ public class DumbEntity {
     @Column
     private Long value;
 
-    public DumbEntityDto getDto() {
-        return DumbEntityDto.builder().id(id).value(value).build();
+    public DumbEntityDTO buildDto() {
+        return DumbEntityDTO.builder().id(id).value(value).build();
     }
 }
