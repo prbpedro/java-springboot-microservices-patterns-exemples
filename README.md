@@ -12,15 +12,22 @@ The following technologies where used to implement the solution:
 - [Vertx.io](https://vertx.io/)
 - [Swagger](https://swagger.io/)
 
-## Running the integration tests
+## Initializing the infrastructure
 
-To initialize the infrastructure needed to the tests execute the following command:
+To initialize the infrastructure needed to the tests and the application, execute the following command:
 ```bash
 ./gradlew runAppInfrastructureComposeUp
 ```
 This will create an Instance of MySql with one database named dumb_db, one table named DumbEntity with two columns, an auto generated id and a value column. This is done by running the scripts / schema.sql file.
 The initialization process will also create a read only user by running the scripts / createreadonlyuser.sql file.
 
+
+To destroy the resources created in the infrastructure initialization run the following command:
+```bash
+./gradlew runAppInfrastructureComposeDown
+```
+
+## Running the integration tests
 After then infrastructure initialization you can run the integration tests by simple running the following command:
 ```bash
 ./gradlew build
@@ -30,7 +37,17 @@ The tests ensure that the DumbEntityReadOnlyRepository class does not have write
 
 This can be achieved by configuring multiple connection factories configured through the R2dbcReadonlyConfiguration and R2dbcWriteConfiguration classes.
 
-To destroy the resources created in the infrastructure initialization run the following command:
+
+## Runnig the application
+After then infrastructure initialization you can run the application executing the following command:
 ```bash
-./gradlew runAppInfrastructureComposeDown
+./gradlew bootRun
 ```
+
+The application will expose 4 endpoints:
+- Dumb entity PUT
+- Dumb entity GET
+- Dumb entity LIST
+- Dumb entity DELETE
+
+To call the exposed endpoints, you can access the swagger-ui page via the address http://localhost:8080/swagger-ui in the browser.
