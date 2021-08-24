@@ -43,6 +43,7 @@ public class DumbEntityControllerIntegrationTest {
     @Test
     public void shouldGetDumbEntityTest() {
         DumbEntity d = repository.save(DumbEntity.builder().build()).block();
+        assert d != null;
         webTestClient
             .get()
             .uri("/dumb/{id}", d.getId())
@@ -69,6 +70,7 @@ public class DumbEntityControllerIntegrationTest {
     @Test
     public void shouldDeleteDumbEntityTest() {
         DumbEntity d = repository.save(DumbEntity.builder().build()).block();
+        assert d != null;
         webTestClient
             .delete()
             .uri("/dumb/{id}", d.getId())
