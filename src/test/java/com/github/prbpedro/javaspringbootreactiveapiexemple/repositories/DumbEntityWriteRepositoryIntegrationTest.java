@@ -17,7 +17,7 @@ public class DumbEntityWriteRepositoryIntegrationTest {
 
     @BeforeTestMethod
     public void beforeAll() {
-        repository.deleteAll();
+        repository.deleteAll().subscribe();
     }
 
     @Test

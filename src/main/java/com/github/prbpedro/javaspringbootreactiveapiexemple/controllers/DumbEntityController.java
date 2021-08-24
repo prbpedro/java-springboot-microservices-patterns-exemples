@@ -15,8 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController()
 @RequiredArgsConstructor
 @RequestMapping("/dumb")
@@ -38,9 +36,9 @@ public class DumbEntityController {
         @ApiResponse(code = 500, message = UNEXPECTED_ERROR, response = MessageResponseDTO.class),
         @ApiResponse(code = 400, message = BAD_REQUEST),
         @ApiResponse(code = 404, message = ENTITY_NOT_FOUND, response = MessageResponseDTO.class)})
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<?>> get(
-        @RequestParam Long id
+        @PathVariable Long id
     ) {
         return
             service
@@ -101,7 +99,15 @@ public class DumbEntityController {
         return
             service
                 .save(dto)
-                .map((rdto) -> ResponseEntity.ok().body(rdto));
+                .defaultIfEmpty(DumbEntityDTO.builder().build())
+                .map(dumbEntityDTO -> {
+                    if (dumbEntityDTO.getId() != null) {
+                        return ResponseEntity.ok().body(dumbEntityDTO);
+                    }
+                    return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(MessageResponseDTO.builder().message(ENTITY_NOT_FOUND).build());
+                });
     }
 
     @ApiOperation(value = "Dumb DELETE")
@@ -109,23 +115,13 @@ public class DumbEntityController {
         @ApiResponse(code = 200, message = ENTITY_DELETED, response = MessageResponseDTO.class),
         @ApiResponse(code = 400, message = BAD_REQUEST),
         @ApiResponse(code = 500, message = UNEXPECTED_ERROR, response = MessageResponseDTO.class)})
-    @DeleteMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<MessageResponseDTO>> delete(
-        @RequestBody
-        @Validated
-            DumbEntityDTO dto
+        @PathVariable Long id
     ) {
-
-        if (dto.getId() == null) {
-            return Mono.just(
-                ResponseEntity
-                    .badRequest()
-                    .body(MessageResponseDTO.builder().message(BAD_REQUEST).build()));
-        }
-
         return
             service
-                .delete(dto)
+                .delete(DumbEntityDTO.builder().id(id).build())
                 .map((voidObj) ->
                     ResponseEntity
                         .ok()

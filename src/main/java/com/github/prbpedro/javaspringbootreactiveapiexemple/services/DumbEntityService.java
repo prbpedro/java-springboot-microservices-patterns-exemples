@@ -20,6 +20,13 @@ public class DumbEntityService {
     private final DumbEntityWriteRepository readRepository;
 
     public Mono<DumbEntityDTO> save(DumbEntityDTO dto) {
+        if(dto.getId()!=null){
+            return Mono
+                .just(dto.getId())
+                .flatMap(this::get)
+                .flatMap(dumbEntityDTO -> writeRepository.save(dto.buildEntity()).map(DumbEntity::buildDto));
+        }
+
         return writeRepository.save(dto.buildEntity()).map(DumbEntity::buildDto);
     }
 
