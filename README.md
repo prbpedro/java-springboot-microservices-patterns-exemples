@@ -35,7 +35,7 @@ After then infrastructure initialization you can run the integration tests by si
 
 The tests ensure that the DumbEntityReadOnlyRepository class does not have write access granted to the database and that the DumbEntityWriteRepository class does have.
 
-This can be achieved by configuring multiple connection factories configured through the R2dbcReadonlyConfiguration and R2dbcWriteConfiguration classes.
+This can be achieved by configuring multiple connection factories through the R2dbcReadonlyConfiguration and R2dbcWriteConfiguration classes.
 
 
 ## Runnig the application
