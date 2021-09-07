@@ -1,4 +1,4 @@
-# javaspringbootreactiveapiexemple
+# javaspringbootreactiveapiexample
 This project exemplifies the use of R2DBC in reactive Springboot RESTful API with multiple (read only and write) databases configurations.
 The following technologies where used to implement the solution:
 - [Java 11](https://openjdk.java.net/projects/jdk/11/)
