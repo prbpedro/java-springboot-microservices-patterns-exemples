@@ -52,8 +52,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
 
         Map<String, String> attributes;
         try {
-            attributes = mapper.readValue(e.getMessageAttributes(), new TypeReference<Map<String, String>>() {
-            });
+            attributes = mapper.readValue(e.getMessageAttributes(), new TypeReference<Map<String, String>>() {});
         } catch (JsonProcessingException jsonProcessingException) {
             throw new RuntimeException("Error reading message attributes");
         }
