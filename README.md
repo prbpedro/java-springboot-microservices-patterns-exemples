@@ -50,4 +50,4 @@ The application will expose 4 endpoints:
 - Dumb entity LIST
 - Dumb entity DELETE
 
-To call the exposed endpoints, you can access the swagger-ui page via the address http://localhost:8080/swagger-ui in the browser.
+To call the exposed endpoints, you can access the swagger-ui page via the address http://localhost:8080/swagger-ui.html in the browser.

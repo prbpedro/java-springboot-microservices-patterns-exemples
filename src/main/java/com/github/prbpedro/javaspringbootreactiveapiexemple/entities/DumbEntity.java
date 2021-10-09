@@ -1,15 +1,15 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.entities;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 @Data
 @Builder
 @EqualsAndHashCode(exclude = {"value"})
+@AllArgsConstructor
+@NoArgsConstructor
 public class DumbEntity {
 
     @Id

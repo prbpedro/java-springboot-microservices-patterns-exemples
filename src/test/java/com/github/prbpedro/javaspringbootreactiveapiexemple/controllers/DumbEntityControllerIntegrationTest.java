@@ -2,6 +2,7 @@ package com.github.prbpedro.javaspringbootreactiveapiexemple.controllers;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntity;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.event.annotation.BeforeTestMethod;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
@@ -20,11 +22,16 @@ public class DumbEntityControllerIntegrationTest {
     WebTestClient webTestClient;
 
     @Autowired
+    DumbEntityTransactionOutboxWriteRepository dumbEntityTransactionOutboxWriteRepository;
+
+    @Autowired
     DumbEntityWriteRepository repository;
 
     @BeforeEach
     public void beforeEach() {
+        dumbEntityTransactionOutboxWriteRepository.deleteAll().block();
         repository.deleteAll().block();
+
         repository.save(DumbEntity.builder().build()).block();
     }
 

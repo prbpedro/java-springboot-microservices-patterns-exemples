@@ -1,6 +1,7 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,26 +11,35 @@ import org.springframework.util.Assert;
 import reactor.test.StepVerifier;
 
 @SpringBootTest
-public class DumbEntityServiceIntegrationTests {
+public class DumbEntityTransactionalServiceIntegrationTests {
 
     @Autowired
     DumbEntityWriteRepository repository;
 
     @Autowired
+    DumbEntityTransactionOutboxWriteRepository dumbEntityTransactionOutboxWriteRepository;
+
+    @Autowired
+    DumbEntityTransactionalService transactionalService;
+
+    @Autowired
     DumbEntityService service;
+
 
     @BeforeTestMethod
     public void beforeAll() {
+        dumbEntityTransactionOutboxWriteRepository.deleteAll();
         repository.deleteAll();
     }
 
     @Test
     public void saveTest() {
         StepVerifier
-            .create(service.save(DumbEntityDTO.builder().value(1L).build()))
+            .create(transactionalService.save(DumbEntityDTO.builder().value(1L).build()))
             .assertNext(dto -> {
                 Assert.notNull(dto, "Returned entity should not be null");
-                Assert.notNull(dto.getId(), "Returned entity should not be null");
+                Assert.notNull(dto.getDumbEntity(), "Returned entity should not be null");
+                Assert.notNull(dto.getDumbEntityTransactionOutbox(), "Returned entity should not be null");
             })
             .verifyComplete();
     }
@@ -38,7 +48,7 @@ public class DumbEntityServiceIntegrationTests {
     public void getTest() {
         StepVerifier
             .create(
-                service
+                transactionalService
                     .save(DumbEntityDTO.builder().value(1L).build())
                     .flatMap(dumbEntityDTO -> service.get(dumbEntityDTO.getId()))
             )
@@ -53,9 +63,13 @@ public class DumbEntityServiceIntegrationTests {
     public void deleteTest() {
         StepVerifier
             .create(
-                service
+                transactionalService
                     .save(DumbEntityDTO.builder().value(1L).build())
-                    .flatMap(dumbEntityDTO -> service.delete(dumbEntityDTO))
+                    .flatMap(dumbEntityDTO -> dumbEntityTransactionOutboxWriteRepository
+                            .deleteById(dumbEntityDTO.getDumbEntityTransactionOutbox().getId())
+                            .map(e -> dumbEntityDTO)
+                    )
+                    .flatMap(dumbEntityDTO -> transactionalService.delete(dumbEntityDTO))
                     .flatMap(dumbEntityDto -> service.get(1L))
             )
             .expectNextCount(0)
@@ -66,7 +80,7 @@ public class DumbEntityServiceIntegrationTests {
     public void listAllTest() {
         StepVerifier
             .create(
-                service
+                transactionalService
                     .save(DumbEntityDTO.builder().value(1L).build())
                     .map(dumbEntityDTO -> service.listAll())
             )

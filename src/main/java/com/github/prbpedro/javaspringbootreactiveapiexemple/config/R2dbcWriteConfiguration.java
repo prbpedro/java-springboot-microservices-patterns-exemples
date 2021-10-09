@@ -10,12 +10,16 @@ import org.springframework.data.r2dbc.core.R2dbcEntityOperations;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.r2dbc.dialect.MySqlDialect;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.transaction.ReactiveTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableR2dbcRepositories(
     entityOperationsRef = "writeEntityTemplate",
     basePackages = "com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write")
+@EnableTransactionManagement
 public class R2dbcWriteConfiguration {
 
     @Bean
@@ -37,5 +41,13 @@ public class R2dbcWriteConfiguration {
             .build();
 
         return new R2dbcEntityTemplate(databaseClient, strategy);
+    }
+
+    @Bean
+    public ReactiveTransactionManager transactionManager(
+        @Qualifier("writeConnectionFactory")
+            ConnectionFactory connectionFactory
+    ) {
+        return new R2dbcTransactionManager(connectionFactory);
     }
 }

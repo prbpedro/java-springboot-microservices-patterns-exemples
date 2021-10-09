@@ -3,6 +3,7 @@ package com.github.prbpedro.javaspringbootreactiveapiexemple.controllers;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.MessageResponseDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.services.DumbEntityService;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.services.DumbEntityTransactionalService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -29,6 +30,9 @@ public class DumbEntityController {
 
     @Autowired
     private final DumbEntityService service;
+
+    @Autowired
+    private final DumbEntityTransactionalService transactionalServiceService;
 
     @ApiOperation(value = "Dumb GET")
     @ApiResponses(value = {
@@ -97,7 +101,7 @@ public class DumbEntityController {
             DumbEntityDTO dto
     ) {
         return
-            service
+            transactionalServiceService
                 .save(dto)
                 .defaultIfEmpty(DumbEntityDTO.builder().build())
                 .map(dumbEntityDTO -> {
@@ -120,7 +124,7 @@ public class DumbEntityController {
         @PathVariable Long id
     ) {
         return
-            service
+            transactionalServiceService
                 .delete(DumbEntityDTO.builder().id(id).build())
                 .map((voidObj) ->
                     ResponseEntity

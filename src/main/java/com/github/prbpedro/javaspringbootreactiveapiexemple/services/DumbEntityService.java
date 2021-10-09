@@ -2,37 +2,25 @@ package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.dto.DumbEntityDTO;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntity;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.rmi.UnexpectedException;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class DumbEntityService {
 
     @Autowired
-    private final DumbEntityWriteRepository writeRepository;
-
-    @Autowired
     private final DumbEntityWriteRepository readRepository;
-
-    public Mono<DumbEntityDTO> save(DumbEntityDTO dto) {
-        if(dto.getId()!=null){
-            return Mono
-                .just(dto.getId())
-                .flatMap(this::get)
-                .flatMap(dumbEntityDTO -> writeRepository.save(dto.buildEntity()).map(DumbEntity::buildDto));
-        }
-
-        return writeRepository.save(dto.buildEntity()).map(DumbEntity::buildDto);
-    }
-
-    public Mono<Void> delete(DumbEntityDTO dto) {
-        return writeRepository.delete(dto.buildEntity());
-    }
 
     public Mono<DumbEntityDTO> get(Long id) {
         return readRepository.findById(id)

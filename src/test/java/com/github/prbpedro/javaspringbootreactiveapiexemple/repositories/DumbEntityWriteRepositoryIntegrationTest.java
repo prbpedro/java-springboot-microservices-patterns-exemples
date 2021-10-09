@@ -1,6 +1,7 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.repositories;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntity;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityWriteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,12 @@ public class DumbEntityWriteRepositoryIntegrationTest {
     @Autowired
     DumbEntityWriteRepository repository;
 
+    @Autowired
+    DumbEntityTransactionOutboxWriteRepository dumbEntityTransactionOutboxWriteRepository;
+
     @BeforeTestMethod
     public void beforeAll() {
+        dumbEntityTransactionOutboxWriteRepository.deleteAll().subscribe();
         repository.deleteAll().subscribe();
     }
 
