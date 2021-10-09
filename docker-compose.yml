@@ -18,3 +18,12 @@ services:
       test: mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD
       timeout: 5s
       retries: 10
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - SERVICES=sqs,sns
+    ports:
+      - '4566:4566'

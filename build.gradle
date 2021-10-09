@@ -31,6 +31,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	//Aws
+	implementation platform('software.amazon.awssdk:bom:2.15.0')
+	implementation 'software.amazon.awssdk:sns'
+	implementation 'software.amazon.awssdk:sqs'
+
 	//Vertex.io
 	implementation group: 'dev.snowdrop', name: 'vertx-spring-boot-starter-http', version: '1.2.0'
 
@@ -50,6 +55,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'org.awaitility:awaitility:3.1.2'
 }
 
 dockerCompose {
@@ -67,7 +73,12 @@ def defaultEnvironmentVariables = ["JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_S
 								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_READONLY_SERVICE_USER": "readonlyuser",
 								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_READONLY_SERVICE_PASSWORD": "password",
 								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_USER": "root",
-								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_PASSWORD": "password"]
+								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_PASSWORD": "password",
+								   "AWS_SNS_ENDPOINT": "http://localhost:4566",
+								   "AWS_ACCESS_KEY_ID": "FAKE",
+								   "AWS_SECRET_ACCESS_KEY": "FAKE",
+								   "AWS_REGION": "us-east-1",
+								   "DUMB_TOPIC_ARN":"arn:aws:sns:us-east-1:000000000000:DumbTopic"]
 
 bootRun {
 	environment = defaultEnvironmentVariables
