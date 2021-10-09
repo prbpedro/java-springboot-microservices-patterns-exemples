@@ -39,19 +39,15 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     public Flux<DumbEntityTransactionOutbox> selectAndUpdateStatus() {
         return repository
             .findPendingEntitiesLimited()
-            .flatMap(this::sendEvents)
-            .flatMap(this::updateEntity);
+            .flatMap(this::sendEvent);
     }
 
     public Mono<DumbEntityTransactionOutbox> updateEntity(DumbEntityTransactionOutbox e) {
-        if (e.getId() == 33) {
-            throw new RuntimeException("Error reading message attributes");
-        }
         e.setStatus("PROCESSED");
         return repository.save(e);
     }
 
-    public Mono<DumbEntityTransactionOutbox> sendEvents(DumbEntityTransactionOutbox e) {
+    public Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
         ObjectMapper mapper = new ObjectMapper();
 
         Map<String, String> attributes;
@@ -77,6 +73,6 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
         } catch (Throwable t) {
             throw new RuntimeException("Error sending message", t);
         }
-        return Mono.just(e);
+        return updateEntity(e);
     }
 }
