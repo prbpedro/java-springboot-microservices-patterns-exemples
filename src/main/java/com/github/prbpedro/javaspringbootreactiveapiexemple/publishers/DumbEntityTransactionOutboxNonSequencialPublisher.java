@@ -39,10 +39,14 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     public Flux<DumbEntityTransactionOutbox> selectAndUpdateStatus() {
         return repository
             .findPendingEntitiesLimited()
-            .flatMap(this::updateEntity)
-            .flatMap(this::sendEvents);
+            .flatMap(this::sendEvents)
+            .flatMap(this::updateEntity);
     }
+
     public Mono<DumbEntityTransactionOutbox> updateEntity(DumbEntityTransactionOutbox e) {
+        if (e.getId() == 33) {
+            throw new RuntimeException("Error reading message attributes");
+        }
         e.setStatus("PROCESSED");
         return repository.save(e);
     }
@@ -54,7 +58,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
         try {
             attributes = mapper.readValue(e.getMessageAttributes(), new TypeReference<Map<String, String>>() {});
         } catch (JsonProcessingException jsonProcessingException) {
-            throw new RuntimeException("Error reading message attributes");
+        throw new RuntimeException("Error reading message attributes");
         }
 
         Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
