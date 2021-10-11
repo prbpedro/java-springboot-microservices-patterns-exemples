@@ -1,8 +1,7 @@
-package publishers;
+package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
 import com.github.prbpedro.javaspringbootreactiveapiexemple.JavaSpringbootReactiveApiExempleApplication;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
-import com.github.prbpedro.javaspringbootreactiveapiexemple.publishers.DumbEntityTransactionOutboxNonSequencialPublisher;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import java.util.concurrent.ExecutionException;
 
-@SpringBootTest(classes = {JavaSpringbootReactiveApiExempleApplication.class})
+@SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
 
     @Autowired

@@ -1,8 +1,5 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import lombok.AllArgsConstructor;
@@ -12,16 +9,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
-import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 @AllArgsConstructor
 public class DumbEntityTransactionOutboxNonSequencialPublisher {
+
+    public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
 
     @Autowired
     private final DumbEntityTransactionOutboxWriteRepository repository;
@@ -29,16 +25,17 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     @Autowired
     private final SnsAsyncClient snsAsyncClient;
 
-    @Scheduled(fixedDelay = 100000)
+    @Scheduled(fixedDelay = 300000)
     public void publish() {
         selectAndUpdateStatus()
-            .subscribe();
+            .blockLast();
     }
 
     @Transactional
     public Flux<DumbEntityTransactionOutbox> selectAndUpdateStatus() {
         return repository
             .findPendingEntitiesLimited()
+            .flatMap(this::updateEntity)
             .flatMap(this::sendEvent);
     }
 
@@ -48,31 +45,22 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     }
 
     public Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
-        ObjectMapper mapper = new ObjectMapper();
+        return Mono
+            .fromFuture(() ->
+                snsAsyncClient
+                    .publish(
+                        PublishRequest
+                            .builder()
+                            .topicArn(System.getenv(DUMB_TOPIC_ARN))
+                            .message(e.getMessageBody())
+                            .messageAttributes(e.buildMessageAttributesMap())
+                            .build()))
+            .map(t -> {
+                if (t.sdkHttpResponse().statusCode() != HttpStatusCode.OK) {
+                    throw new RuntimeException("Error publishing message to SNS");
+                }
 
-        Map<String, String> attributes;
-        try {
-            attributes = mapper.readValue(e.getMessageAttributes(), new TypeReference<Map<String, String>>() {});
-        } catch (JsonProcessingException jsonProcessingException) {
-        throw new RuntimeException("Error reading message attributes");
-        }
-
-        Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
-        attributes.forEach((k, v) -> messageAttributes.put(k, MessageAttributeValue.builder().stringValue(v).dataType("String").build()));
-
-        try {
-            snsAsyncClient
-                .publish(
-                    PublishRequest
-                        .builder()
-                        .topicArn(System.getenv("DUMB_TOPIC_ARN"))
-                        .message(e.getMessageBody())
-                        .messageAttributes(messageAttributes)
-                        .build())
-                .get();
-        } catch (Throwable t) {
-            throw new RuntimeException("Error sending message", t);
-        }
-        return updateEntity(e);
+                return e;
+            });
     }
 }
