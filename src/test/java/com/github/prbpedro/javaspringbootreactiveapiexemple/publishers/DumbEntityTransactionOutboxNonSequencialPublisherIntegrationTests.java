@@ -1,6 +1,5 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.JavaSpringbootReactiveApiExempleApplication;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import org.junit.jupiter.api.BeforeEach;

@@ -9,11 +9,13 @@ import java.net.URI;
 @Configuration
 public class AwsSnsConfig {
 
+    public static final String AWS_SNS_ENDPOINT_VARIABLE_NAME = "AWS_SNS_ENDPOINT";
+
     @Bean
     public SnsAsyncClient amazonSnsAsyncClient() {
         return SnsAsyncClient
             .builder()
-            .endpointOverride(URI.create(System.getenv("AWS_SNS_ENDPOINT")))
+            .endpointOverride(URI.create(System.getenv(AWS_SNS_ENDPOINT_VARIABLE_NAME)))
             .build();
     }
 }

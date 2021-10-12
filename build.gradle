@@ -76,6 +76,7 @@ def defaultEnvironmentVariables = ["JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_S
 								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_USER": "root",
 								   "JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_WRITE_SERVICE_PASSWORD": "password",
 								   "AWS_SNS_ENDPOINT": "http://localhost:4566",
+								   "AWS_SQS_ENDPOINT": "http://localhost:4566",
 								   "AWS_ACCESS_KEY_ID": "FAKE",
 								   "AWS_SECRET_ACCESS_KEY": "FAKE",
 								   "AWS_REGION": "us-east-1",

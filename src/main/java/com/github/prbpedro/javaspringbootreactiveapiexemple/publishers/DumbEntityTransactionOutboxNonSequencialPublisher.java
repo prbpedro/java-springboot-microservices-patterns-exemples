@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest;
 public class DumbEntityTransactionOutboxNonSequencialPublisher {
 
     public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
+    public static final int PUBLISHER_SCHEDULER_FIXED_DELAY_MILLIS = 300000;
 
     @Autowired
     private final DumbEntityTransactionOutboxWriteRepository repository;
@@ -25,7 +26,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     @Autowired
     private final SnsAsyncClient snsAsyncClient;
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(fixedDelay = PUBLISHER_SCHEDULER_FIXED_DELAY_MILLIS)
     public void publish() {
         selectAndUpdateStatus()
             .blockLast();
