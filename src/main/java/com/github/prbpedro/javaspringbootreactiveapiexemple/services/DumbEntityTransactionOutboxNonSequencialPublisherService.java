@@ -18,9 +18,9 @@ import software.amazon.awssdk.services.sns.model.PublishRequest;
 @AllArgsConstructor
 public class DumbEntityTransactionOutboxNonSequencialPublisherService {
 
-    public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DumbEntityTransactionOutboxNonSequencialPublisherService.class);
+
+    public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
 
     @Autowired
     public final DumbEntityTransactionOutboxWriteRepository repository;

@@ -10,11 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.Assert;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
-import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
-
-import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
@@ -39,7 +34,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
     }
 
     @Test
-    public void publishPendingMessagesTest() throws ExecutionException, InterruptedException {
+    public void publishPendingMessagesTest() {
         DumbEntityTransactionOutbox savedEntityOne = repository.save(
             DumbEntityTransactionOutbox
                 .builder()
@@ -67,9 +62,9 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
         publisher.publish();
 
         String entityOneStatus = repository.findById(savedEntityOne.getId()).block().getStatus();
-        Assert.isTrue(entityOneStatus.equals("PENDING"), "wrong status for entity");
+        Assert.isTrue(entityOneStatus.equals("PROCESSED"), "wrong status for entity");
 
         String entityTwoStatus = repository.findById(savedEntityTwo.getId()).block().getStatus();
-        Assert.isTrue(entityTwoStatus.equals("PENDING"), "wrong status for entity");
+        Assert.isTrue(entityTwoStatus.equals("PROCESSED"), "wrong status for entity");
     }
 }
