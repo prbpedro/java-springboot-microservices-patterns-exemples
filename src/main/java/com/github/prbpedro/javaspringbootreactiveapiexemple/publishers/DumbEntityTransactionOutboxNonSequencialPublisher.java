@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @AllArgsConstructor
@@ -23,7 +24,11 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
     public void publish() {
         service
             .selectAndUpdateStatus()
-            .doOnError(t -> LOGGER.info("Error publishing messages to SNS Topic", t))
-            .blockLast();
+            .collectList()
+            .onErrorResume(t -> {
+                LOGGER.error("Error executing OUTBOX Publisher", t);
+                return Mono.empty();
+            })
+            .block();
     }
 }

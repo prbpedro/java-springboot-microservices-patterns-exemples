@@ -40,7 +40,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
 
     @Test
     public void publishPendingMessagesTest() throws ExecutionException, InterruptedException {
-        repository.save(
+        DumbEntityTransactionOutbox savedEntityOne = repository.save(
             DumbEntityTransactionOutbox
                 .builder()
                 .dumbEntityId(1L)
@@ -52,7 +52,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
                 .build())
             .block();
 
-        repository.save(
+        DumbEntityTransactionOutbox savedEntityTwo = repository.save(
             DumbEntityTransactionOutbox
                 .builder()
                 .dumbEntityId(1L)
@@ -66,14 +66,10 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
 
         publisher.publish();
 
-        GetQueueAttributesResponse getQueueAttributesResponse = sqsAsyncClient.getQueueAttributes(
-            GetQueueAttributesRequest
-                .builder()
-                .queueUrl(IntegrationTestConfiguration.getDumbQueueUrl())
-                .attributeNames(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES)
-                .build())
-            .get();
-        String messageNumberString = getQueueAttributesResponse.attributesAsStrings().get(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES.toString());
-        Assert.isTrue(Integer.parseInt(messageNumberString) == 2, "wrong number of messages sent");
+        String entityOneStatus = repository.findById(savedEntityOne.getId()).block().getStatus();
+        Assert.isTrue(entityOneStatus.equals("PENDING"), "wrong status for entity");
+
+        String entityTwoStatus = repository.findById(savedEntityTwo.getId()).block().getStatus();
+        Assert.isTrue(entityTwoStatus.equals("PENDING"), "wrong status for entity");
     }
 }

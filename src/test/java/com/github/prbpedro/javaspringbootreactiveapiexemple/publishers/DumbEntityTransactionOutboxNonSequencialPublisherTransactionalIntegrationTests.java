@@ -12,14 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.util.Assert;
+import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalIntegrationTests {
@@ -45,7 +49,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
 
     @Test
     public void ensuringTransactionalContext() {
-        DumbEntityTransactionOutbox savedEntity = repository.save(
+        DumbEntityTransactionOutbox savedEntityOne = repository.save(
             DumbEntityTransactionOutbox
                 .builder()
                 .dumbEntityId(1L)
@@ -57,19 +61,54 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
                 .build())
             .block();
 
-        Mockito.when(snsAsyncClient.publish(Mockito.any(PublishRequest.class))).thenThrow(new RuntimeException("TestException"));
+        DumbEntityTransactionOutbox savedEntityTwo = repository.save(
+            DumbEntityTransactionOutbox
+                .builder()
+                .dumbEntityId(2L)
+                .generatedUuid("generatedUuid2")
+                .operation("operation2")
+                .messageBody("{\"id\":\"2\"}")
+                .messageAttributes("{\"id\":\"2\"}")
+                .status("PENDING")
+                .build())
+            .block();
 
-        RuntimeException thrownException = null;
-        try {
-            publisher.publish();
-        } catch (RuntimeException ex) {
-            thrownException = ex;
-        }
+        Mockito.when(
+            snsAsyncClient.publish(
+                PublishRequest
+                    .builder()
+                    .topicArn(System.getenv(DumbEntityTransactionOutboxNonSequencialPublisherService.DUMB_TOPIC_ARN))
+                    .message(savedEntityOne.getMessageBody())
+                    .messageAttributes(savedEntityOne.buildMessageAttributesMap())
+                    .build()))
+            .thenReturn(CompletableFuture.failedFuture(new RuntimeException("TestException")));
 
-        Assert.isTrue(thrownException != null, "wrong thrown exception");
-        Assert.isTrue(thrownException.getMessage().equals("TestException"), "wrong thrown exception");
+        CompletableFuture cf = CompletableFuture.completedFuture(
+            PublishResponse
+                .builder()
+                .sdkHttpResponse(
+                    SdkHttpResponse
+                        .builder()
+                        .statusCode(200)
+                        .build())
+                .build());
 
-        String entityStatus = repository.findById(savedEntity.getId()).block().getStatus();
-        Assert.isTrue(entityStatus.equals("PENDING"), "wrong status for entity");
+        Mockito.when(
+            snsAsyncClient.publish(
+                PublishRequest
+                    .builder()
+                    .topicArn(System.getenv(DumbEntityTransactionOutboxNonSequencialPublisherService.DUMB_TOPIC_ARN))
+                    .message(savedEntityTwo.getMessageBody())
+                    .messageAttributes(savedEntityTwo.buildMessageAttributesMap())
+                    .build()))
+            .thenReturn(cf);
+
+        publisher.publish();
+
+        String entityOneStatus = repository.findById(savedEntityOne.getId()).block().getStatus();
+        Assert.isTrue(entityOneStatus.equals("PENDING"), "wrong status for entity");
+
+        String entityOneStatusTwo = repository.findById(savedEntityTwo.getId()).block().getStatus();
+        Assert.isTrue(entityOneStatusTwo.equals("PENDING"), "wrong status for entity");
     }
 }

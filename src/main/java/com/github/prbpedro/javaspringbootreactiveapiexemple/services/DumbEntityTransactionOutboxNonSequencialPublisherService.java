@@ -48,16 +48,15 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherService {
     }
 
     private Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
+        PublishRequest publishRequest = PublishRequest
+            .builder()
+            .topicArn(System.getenv(DUMB_TOPIC_ARN))
+            .message(e.getMessageBody())
+            .messageAttributes(e.buildMessageAttributesMap())
+            .build();
+
         return Mono
-            .fromFuture(() ->
-                snsAsyncClient
-                    .publish(
-                        PublishRequest
-                            .builder()
-                            .topicArn(System.getenv(DUMB_TOPIC_ARN))
-                            .message(e.getMessageBody())
-                            .messageAttributes(e.buildMessageAttributesMap())
-                            .build()))
+            .fromFuture(() -> snsAsyncClient.publish(publishRequest))
             .map(t -> {
                 if (t.sdkHttpResponse().statusCode() != HttpStatusCode.OK) {
                     throw new RuntimeException("SNS Publish Message in Topic Response Status Code NOT 200");
@@ -65,6 +64,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherService {
 
                 return e;
             })
-            .doOnError(t -> LOGGER.error("Error publishing message to SNS", t));
+            .doOnError(t ->
+                LOGGER.error("Error publishing message to SNS Topic. PublishRequest: " + publishRequest.toString(), t));
     }
 }

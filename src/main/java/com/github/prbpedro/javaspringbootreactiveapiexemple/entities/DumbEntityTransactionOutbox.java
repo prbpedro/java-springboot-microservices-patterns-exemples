@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Data
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class DumbEntityTransactionOutbox {
 
     @Id
