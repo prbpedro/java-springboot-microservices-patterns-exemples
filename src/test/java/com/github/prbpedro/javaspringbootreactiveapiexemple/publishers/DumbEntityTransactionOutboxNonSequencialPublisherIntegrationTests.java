@@ -1,26 +1,23 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
+import com.github.prbpedro.javaspringbootreactiveapiexemple.IntegrationTestConfiguration;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.Assert;
-import software.amazon.awssdk.services.sns.SnsAsyncClient;
-import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
-import software.amazon.awssdk.services.sns.model.SubscribeRequest;
-import software.amazon.awssdk.services.sns.model.Topic;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.model.*;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 
 import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
-
-    @Autowired
-    private SnsAsyncClient snsAsyncClient;
 
     @Autowired
     private SqsAsyncClient sqsAsyncClient;
@@ -31,48 +28,14 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
     @Autowired
     private DumbEntityTransactionOutboxWriteRepository repository;
 
-    private Topic dumbTopic;
-    private String queueUrl;
+    @BeforeAll
+    public static void beforeAll(){
+        IntegrationTestConfiguration.configure();
+    }
 
     @BeforeEach
-    public void configure() throws ExecutionException, InterruptedException {
+    public void beforeEach(){
         repository.deleteAll().block();
-
-        if (snsAsyncClient.listTopics().get().topics().stream().filter(s -> s.topicArn().contains("DumbTopic")).count() < 1) {
-            snsAsyncClient.createTopic(
-                CreateTopicRequest
-                    .builder()
-                    .name("DumbTopic")
-                    .build())
-                .get();
-        }
-
-        dumbTopic = (Topic) snsAsyncClient.listTopics().get().topics().stream().filter(s -> s.topicArn().contains("DumbTopic")).toArray()[0];
-        if (sqsAsyncClient.listQueues().get().queueUrls().stream().filter(s -> s.contains("DumbTopicTestQueue")).count() < 1) {
-            sqsAsyncClient.createQueue(
-                CreateQueueRequest
-                    .builder()
-                    .queueName("DumbTopicTestQueue")
-                    .build())
-                .get();
-        }
-
-        GetQueueUrlResponse getQueueUrlResponse = sqsAsyncClient.getQueueUrl(GetQueueUrlRequest.builder().queueName("DumbTopicTestQueue").build()).get();
-
-        queueUrl = getQueueUrlResponse.queueUrl();
-
-        sqsAsyncClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(queueUrl).build());
-
-        if (snsAsyncClient.listSubscriptions().get().subscriptions().stream().filter(s -> s.topicArn().contains("DumbTopic")).count() < 1) {
-            snsAsyncClient.subscribe(
-                SubscribeRequest
-                    .builder()
-                    .topicArn(dumbTopic.topicArn())
-                    .endpoint(queueUrl)
-                    .protocol("sqs")
-                    .build())
-                .get();
-        }
     }
 
     @Test
@@ -106,7 +69,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
         GetQueueAttributesResponse getQueueAttributesResponse = sqsAsyncClient.getQueueAttributes(
             GetQueueAttributesRequest
                 .builder()
-                .queueUrl(queueUrl)
+                .queueUrl(IntegrationTestConfiguration.getDumbQueueUrl())
                 .attributeNames(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES)
                 .build())
             .get();

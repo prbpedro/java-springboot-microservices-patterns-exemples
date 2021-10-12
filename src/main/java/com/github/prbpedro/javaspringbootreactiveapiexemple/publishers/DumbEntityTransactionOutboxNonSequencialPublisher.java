@@ -3,6 +3,8 @@ package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,8 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
 
     public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
     public static final int PUBLISHER_SCHEDULER_FIXED_DELAY_MILLIS = 300000;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DumbEntityTransactionOutboxNonSequencialPublisher.class);
 
     @Autowired
     private final DumbEntityTransactionOutboxWriteRepository repository;
@@ -42,7 +46,9 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
 
     public Mono<DumbEntityTransactionOutbox> updateEntity(DumbEntityTransactionOutbox e) {
         e.setStatus("PROCESSED");
-        return repository.save(e);
+        return repository
+            .save(e)
+            .doOnError(t -> LOGGER.error("Error updating DumbEntityTransactionOutbox status to PROCESSED", t));
     }
 
     public Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
@@ -58,10 +64,11 @@ public class DumbEntityTransactionOutboxNonSequencialPublisher {
                             .build()))
             .map(t -> {
                 if (t.sdkHttpResponse().statusCode() != HttpStatusCode.OK) {
-                    throw new RuntimeException("Error publishing message to SNS");
+                    throw new RuntimeException("SNS Publish Message in Topic Response Status Code NOT 200");
                 }
 
                 return e;
-            });
+            })
+            .doOnError(t -> LOGGER.error("Error publishing message to SNS", t));
     }
 }

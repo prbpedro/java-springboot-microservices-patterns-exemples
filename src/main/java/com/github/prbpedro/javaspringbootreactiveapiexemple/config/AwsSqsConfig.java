@@ -13,7 +13,7 @@ public class AwsSqsConfig {
     public static final String AWS_SQS_ENDPOINT_VARIABLE_NAME = "AWS_SQS_ENDPOINT";
 
     @Bean
-    public SqsAsyncClient amazonSqsAsyncClient() {
+    public static SqsAsyncClient amazonSqsAsyncClient() {
         return SqsAsyncClient
             .builder()
             .endpointOverride(URI.create(System.getenv(AWS_SQS_ENDPOINT_VARIABLE_NAME)))
