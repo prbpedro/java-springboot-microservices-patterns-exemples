@@ -5,7 +5,7 @@ import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.readonl
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import reactor.test.StepVerifier;
 
 @SpringBootTest
@@ -19,7 +19,7 @@ public class DumbEntityReadOnlyRepositoryIntegrationTest {
 
         StepVerifier
             .create(repository.save(DumbEntity.builder().value(1L).build()))
-            .expectError(DataAccessResourceFailureException.class)
+            .expectError(PermissionDeniedDataAccessException.class)
             .verify();
 
     }

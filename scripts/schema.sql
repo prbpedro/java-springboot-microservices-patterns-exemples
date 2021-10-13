@@ -15,3 +15,11 @@ CREATE TABLE dumb_entity_transaction_outbox (
   generated_uuid varchar(200) NOT NULL ,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE second_dumb_entity (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  value int(11),
+  uuid varchar(200) NOT NULL ,
+  PRIMARY KEY (id),
+  UNIQUE KEY(uuid)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

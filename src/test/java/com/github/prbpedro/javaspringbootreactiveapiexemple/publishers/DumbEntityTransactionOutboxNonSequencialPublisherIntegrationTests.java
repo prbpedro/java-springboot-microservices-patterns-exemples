@@ -7,13 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.Assert;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
-
-    @Autowired
-    private SqsAsyncClient sqsAsyncClient;
 
     @Autowired
     private DumbEntityTransactionOutboxNonSequencialPublisher publisher;
@@ -35,7 +31,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
                 .generatedUuid("generatedUuid")
                 .operation("operation")
                 .messageBody("{\"id\":\"1\"}")
-                .messageAttributes("{\"id\":\"1\"}")
+                .messageAttributes("{\"uuid\":\"1\", \"operation\":\"1\"}")
                 .status("PENDING")
                 .build())
             .block();
@@ -47,7 +43,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
                 .generatedUuid("generatedUuid")
                 .operation("operation")
                 .messageBody("{\"id\":\"1\"}")
-                .messageAttributes("{\"id\":\"1\"}")
+                .messageAttributes("{\"uuid\":\"1\", \"operation\":\"1\"}")
                 .status("PENDING")
                 .build())
             .block();

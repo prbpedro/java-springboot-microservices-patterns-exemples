@@ -1,27 +1,33 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
+import com.amazonaws.http.HttpResponse;
+import com.amazonaws.http.SdkHttpMetadata;
+import com.amazonaws.services.sns.AmazonSNSAsync;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.config.AwsConfig;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.util.Assert;
-import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
-import software.amazon.awssdk.services.sns.model.PublishResponse;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalIntegrationTests {
 
     @MockBean
-    private SnsAsyncClient snsAsyncClient;
+    private AmazonSNSAsync amazonSNSAsync;
 
     @Autowired
     private DumbEntityTransactionOutboxNonSequencialPublisher publisher;
@@ -43,7 +49,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
                 .generatedUuid("generatedUuid")
                 .operation("operation")
                 .messageBody("{\"id\":\"1\"}")
-                .messageAttributes("{\"id\":\"1\"}")
+                .messageAttributes("{\"uuid\":\"1\", \"operation\":\"1\"}")
                 .status("PENDING")
                 .build())
             .block();
@@ -55,40 +61,34 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
                 .generatedUuid("generatedUuid2")
                 .operation("operation2")
                 .messageBody("{\"id\":\"2\"}")
-                .messageAttributes("{\"id\":\"2\"}")
+                .messageAttributes("{\"uuid\":\"2\", \"operation\":\"2\"}")
                 .status("PENDING")
                 .build())
             .block();
 
-        Mockito.when(
-            snsAsyncClient.publish(
-                PublishRequest
-                    .builder()
-                    .topicArn(AwsConfig.getDumbTopicArn())
-                    .message(savedEntityOne.getMessageBody())
-                    .messageAttributes(savedEntityOne.buildMessageAttributesMap())
-                    .build()))
-            .thenReturn(CompletableFuture.failedFuture(new RuntimeException("TestException")));
+        PublishRequest p = new PublishRequest();
+        p.setTopicArn(AwsConfig.getDumbTopicArn());
+        p.setMessage(savedEntityOne.getMessageBody());
+        p.setMessageAttributes(savedEntityOne.buildMessageAttributesMap());
 
-        CompletableFuture cf = CompletableFuture.completedFuture(
-            PublishResponse
-                .builder()
-                .sdkHttpResponse(
-                    SdkHttpResponse
-                        .builder()
-                        .statusCode(200)
-                        .build())
-                .build());
+        PublishResult r = Mockito.mock(PublishResult.class);
+        HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        Mockito.when(httpResponse.getStatusCode()).thenReturn(200);
+        SdkHttpMetadata sdkHttpMetadata = SdkHttpMetadata.from(httpResponse);
+        Mockito.when(r.getSdkHttpMetadata()).thenReturn(sdkHttpMetadata);
 
-        Mockito.when(
-            snsAsyncClient.publish(
-                PublishRequest
-                    .builder()
-                    .topicArn(AwsConfig.getDumbTopicArn())
-                    .message(savedEntityTwo.getMessageBody())
-                    .messageAttributes(savedEntityTwo.buildMessageAttributesMap())
-                    .build()))
-            .thenReturn(cf);
+        PublishRequest p2 = new PublishRequest();
+        p.setTopicArn(AwsConfig.getDumbTopicArn());
+        p.setMessage(savedEntityTwo.getMessageBody());
+        p.setMessageAttributes(savedEntityTwo.buildMessageAttributesMap());
+
+        Mockito.when(amazonSNSAsync.publish(ArgumentMatchers.any())).then((e) -> {
+            if(((PublishRequest)e.getArgument(0)).getMessage().equals("{\"id\": \"1\"}")) {
+                throw new RuntimeException("TestException");
+            }
+
+            return p2;
+        });
 
         publisher.publish();
 

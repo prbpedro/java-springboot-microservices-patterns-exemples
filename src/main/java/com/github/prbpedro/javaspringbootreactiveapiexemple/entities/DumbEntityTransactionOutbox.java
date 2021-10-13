@@ -1,5 +1,6 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.entities;
 
+import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +10,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
-import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -47,20 +47,25 @@ public class DumbEntityTransactionOutbox {
     @Column
     private String status;
 
-    public Map<String, MessageAttributeValue> buildMessageAttributesMap(){
+    public Map<String, MessageAttributeValue> buildMessageAttributesMap() {
         ObjectMapper mapper = new ObjectMapper();
 
         Map<String, String> attributes;
         try {
-            attributes = mapper.readValue(messageAttributes!=null ? messageAttributes : "", new TypeReference<Map<String, String>>() {
+            attributes = mapper.readValue(messageAttributes != null ? messageAttributes : "", new TypeReference<Map<String, String>>() {
             });
         } catch (JsonProcessingException jsonProcessingException) {
             throw new RuntimeException("Error reading message attributes");
         }
 
         Map<String, MessageAttributeValue> messageAttributesMap = new HashMap<>();
-        attributes.forEach((k, v) ->
-            messageAttributesMap.put(k, MessageAttributeValue.builder().stringValue(v).dataType("String").build()));
+        attributes.forEach((k, v) -> {
+            MessageAttributeValue m = new MessageAttributeValue();
+            m.setStringValue(v);
+            m.setDataType("String");
+            messageAttributesMap.put(k, m);
+
+        });
 
         return messageAttributesMap;
     }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntity;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.SecondDumbEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +39,10 @@ public class DumbEntityDTO {
 
     public DumbEntity buildEntity() {
         return DumbEntity.builder().id(id).value(value).build();
+    }
+
+    public SecondDumbEntity buildSecondDumbEntity() {
+        return SecondDumbEntity.builder().id(id).value(value).uuid(uuid).build();
     }
 
     public DumbEntityTransactionOutbox buildEntityOutbox() {

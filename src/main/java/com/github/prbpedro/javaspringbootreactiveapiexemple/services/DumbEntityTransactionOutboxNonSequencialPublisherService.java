@@ -1,5 +1,7 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
+import com.amazonaws.services.sns.AmazonSNSAsync;
+import com.amazonaws.services.sns.model.PublishRequest;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.config.AwsConfig;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
@@ -12,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.http.HttpStatusCode;
-import software.amazon.awssdk.services.sns.SnsAsyncClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
 
 @Service
 @AllArgsConstructor
@@ -25,7 +25,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherService {
     public final DumbEntityTransactionOutboxWriteRepository repository;
 
     @Autowired
-    public SnsAsyncClient snsAsyncClient;
+    public AmazonSNSAsync amazonSNSAsync;
 
     @Transactional
     public Flux<DumbEntityTransactionOutbox> selectAndUpdateStatus() {
@@ -41,23 +41,24 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherService {
 
     private Mono<DumbEntityTransactionOutbox> updateEntity(DumbEntityTransactionOutbox e) {
         e.setStatus("PROCESSED");
-        return repository
-            .save(e)
+
+        return Mono
+            .just(e)
+            .flatMap(repository::save)
             .doOnError(t -> LOGGER.error("Error updating DumbEntityTransactionOutbox status to PROCESSED", t));
     }
 
     private Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
-        PublishRequest publishRequest = PublishRequest
-            .builder()
-            .topicArn(AwsConfig.getDumbTopicArn())
-            .message(e.getMessageBody())
-            .messageAttributes(e.buildMessageAttributesMap())
-            .build();
+        PublishRequest publishRequest = new PublishRequest();
+        publishRequest.setTopicArn(AwsConfig.getDumbTopicArn());
+        publishRequest.setMessage(e.getMessageBody());
+        publishRequest.setMessageAttributes(e.buildMessageAttributesMap());
 
         return Mono
-            .fromFuture(() -> snsAsyncClient.publish(publishRequest))
-            .map(t -> {
-                if (t.sdkHttpResponse().statusCode() != HttpStatusCode.OK) {
+            .just(publishRequest)
+            .map(it -> amazonSNSAsync.publish(it))
+            .map(it -> {
+                if (it.getSdkHttpMetadata().getHttpStatusCode() != HttpStatusCode.OK) {
                     throw new RuntimeException("SNS Publish Message in Topic Response Status Code NOT 200");
                 }
 

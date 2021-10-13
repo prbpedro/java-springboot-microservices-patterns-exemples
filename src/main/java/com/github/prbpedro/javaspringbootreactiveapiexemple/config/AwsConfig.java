@@ -1,21 +1,24 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.config;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.sns.AmazonSNSAsync;
+import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
+import com.amazonaws.services.sns.model.CreateTopicRequest;
+import com.amazonaws.services.sns.model.SubscribeRequest;
+import com.amazonaws.services.sns.model.Topic;
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
+import com.amazonaws.services.sqs.model.GetQueueUrlResult;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import software.amazon.awssdk.services.sns.SnsAsyncClient;
-import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
-import software.amazon.awssdk.services.sns.model.SubscribeRequest;
-import software.amazon.awssdk.services.sns.model.Topic;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
-import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
+import org.springframework.context.annotation.Primary;
 
 import javax.annotation.PostConstruct;
-import java.net.URI;
 
 @Configuration
 public class AwsConfig {
@@ -28,22 +31,30 @@ public class AwsConfig {
     private static Topic dumbTopic;
 
     public static String getDumbTopicArn() {
-        return dumbTopic.topicArn();
+        return dumbTopic.getTopicArn();
     }
 
     @Bean
-    public static SnsAsyncClient amazonSnsAsyncClient() {
-        return SnsAsyncClient
-            .builder()
-            .endpointOverride(URI.create(EnvironmentVariables.AWS_SNS_ENDPOINT.getValue()))
+    @Primary
+    public static AmazonSNSAsync amazonSNSAsync() {
+        return AmazonSNSAsyncClientBuilder
+            .standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(
+                    EnvironmentVariables.AWS_SQS_ENDPOINT.getValue(),
+                    EnvironmentVariables.AWS_REGION.getValue()))
             .build();
     }
 
     @Bean
-    public static SqsAsyncClient amazonSqsAsyncClient() {
-        return SqsAsyncClient
-            .builder()
-            .endpointOverride(URI.create(EnvironmentVariables.AWS_SQS_ENDPOINT.getValue()))
+    @Primary
+    public static AmazonSQSAsync amazonSQSAsync() {
+        return AmazonSQSAsyncClientBuilder
+            .standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(
+                    EnvironmentVariables.AWS_SQS_ENDPOINT.getValue(),
+                    EnvironmentVariables.AWS_REGION.getValue()))
             .build();
     }
 
@@ -51,43 +62,38 @@ public class AwsConfig {
     public void configure() {
 
         try {
-            SnsAsyncClient snsAsyncClient = amazonSnsAsyncClient();
-            SqsAsyncClient sqsAsyncClient = amazonSqsAsyncClient();
+            AmazonSNSAsync amazonSNSAsync = amazonSNSAsync();
+            AmazonSQSAsync amazonSQSAsync = amazonSQSAsync();
 
-            if (snsAsyncClient.listTopics().get().topics().stream().filter(s -> s.topicArn().contains(DUMB_TOPIC_NAME)).count() < 1) {
-                snsAsyncClient.createTopic(
-                    CreateTopicRequest
-                        .builder()
-                        .name(DUMB_TOPIC_NAME)
-                        .build())
-                    .get();
+            if (amazonSNSAsync.listTopics().getTopics().stream().filter(s -> s.getTopicArn().contains(DUMB_TOPIC_NAME)).count() < 1) {
+                CreateTopicRequest createTopicRequest = new CreateTopicRequest();
+                createTopicRequest.setName(DUMB_TOPIC_NAME);
+                amazonSNSAsync.createTopic(createTopicRequest);
             }
 
-            dumbTopic = (Topic) snsAsyncClient.listTopics().get().topics().stream().filter(s -> s.topicArn().contains(DUMB_TOPIC_NAME)).toArray()[0];
-            if (sqsAsyncClient.listQueues().get().queueUrls().stream().filter(s -> s.contains(DUMB_QUEUE_NAME)).count() < 1) {
-                sqsAsyncClient.createQueue(
-                    CreateQueueRequest
-                        .builder()
-                        .queueName(DUMB_QUEUE_NAME)
-                        .build())
-                    .get();
+            dumbTopic = (Topic) amazonSNSAsync.listTopics().getTopics().stream().filter(s -> s.getTopicArn().contains(DUMB_TOPIC_NAME)).toArray()[0];
+            if (amazonSQSAsync.listQueues().getQueueUrls().stream().filter(s -> s.contains(DUMB_QUEUE_NAME)).count() < 1) {
+                CreateQueueRequest createQueueRequest = new CreateQueueRequest();
+                createQueueRequest.setQueueName(DUMB_QUEUE_NAME);
+                amazonSQSAsync.createQueue(createQueueRequest);
             }
 
-            GetQueueUrlResponse getQueueUrlResponse = sqsAsyncClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(DUMB_QUEUE_NAME).build()).get();
+            GetQueueUrlRequest getQueueUrlRequest = new GetQueueUrlRequest();
+            getQueueUrlRequest.setQueueName(DUMB_QUEUE_NAME);
+            GetQueueUrlResult getQueueUrlResponse = amazonSQSAsync.getQueueUrl(getQueueUrlRequest);
 
-            String dumbQueueUrl = getQueueUrlResponse.queueUrl();
+            String dumbQueueUrl = getQueueUrlResponse.getQueueUrl();
 
-            sqsAsyncClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(dumbQueueUrl).build());
+            PurgeQueueRequest purgeQueueRequest = new PurgeQueueRequest();
+            purgeQueueRequest.setQueueUrl(dumbQueueUrl);
+            amazonSQSAsync.purgeQueue(purgeQueueRequest);
 
-            if (snsAsyncClient.listSubscriptions().get().subscriptions().stream().filter(s -> s.topicArn().contains(DUMB_TOPIC_NAME)).count() < 1) {
-                snsAsyncClient.subscribe(
-                    SubscribeRequest
-                        .builder()
-                        .topicArn(dumbTopic.topicArn())
-                        .endpoint(dumbQueueUrl)
-                        .protocol("sqs")
-                        .build())
-                    .get();
+            if (amazonSNSAsync.listSubscriptions().getSubscriptions().stream().filter(s -> s.getTopicArn().contains(DUMB_TOPIC_NAME)).count() < 1) {
+                SubscribeRequest subscribeRequest = new SubscribeRequest();
+                subscribeRequest.setTopicArn(dumbTopic.getTopicArn());
+                subscribeRequest.setEndpoint(dumbQueueUrl);
+                subscribeRequest.setProtocol("sqs");
+                amazonSNSAsync.subscribe(subscribeRequest);
             }
 
             LOGGER.info("Infrastructure configured");
