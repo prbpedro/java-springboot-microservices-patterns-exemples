@@ -86,8 +86,7 @@ def defaultEnvironmentVariables = ["JAVA_SPRINGBOOT_REACTIVE_API_EXEMPLE_MYSQL_S
 								   "AWS_SQS_ENDPOINT": "http://localhost:4566",
 								   "AWS_ACCESS_KEY_ID": "FAKE",
 								   "AWS_SECRET_ACCESS_KEY": "FAKE",
-								   "AWS_REGION": "us-east-1",
-								   "DUMB_TOPIC_ARN":"arn:aws:sns:us-east-1:000000000000:DumbTopic"]
+								   "AWS_REGION": "us-east-1"]
 
 bootRun {
 	environment = defaultEnvironmentVariables
