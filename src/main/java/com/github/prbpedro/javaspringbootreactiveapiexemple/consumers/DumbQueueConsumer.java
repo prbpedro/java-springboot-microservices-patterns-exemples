@@ -28,6 +28,11 @@ public class DumbQueueConsumer {
         Map<String, Object> headers) {
         dumbQueueTransactionalService
             .processMessage(messageBody, headers)
+            .map(e -> {
+                LOGGER.info("SQS message processed");
+                return e;
+            })
+            .doOnError(t -> LOGGER.error("Error processing sqs message", t))
             .block();
     }
 }
