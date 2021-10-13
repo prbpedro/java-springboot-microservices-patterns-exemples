@@ -1,9 +1,7 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.IntegrationTestConfiguration;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +20,6 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherIntegrationTests {
 
     @Autowired
     private DumbEntityTransactionOutboxWriteRepository repository;
-
-    @BeforeAll
-    public static void beforeAll() {
-        IntegrationTestConfiguration.configure();
-    }
 
     @BeforeEach
     public void beforeEach() {

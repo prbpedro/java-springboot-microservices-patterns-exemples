@@ -1,10 +1,8 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.publishers;
 
-import com.github.prbpedro.javaspringbootreactiveapiexemple.IntegrationTestConfiguration;
+import com.github.prbpedro.javaspringbootreactiveapiexemple.config.AwsConfig;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
-import com.github.prbpedro.javaspringbootreactiveapiexemple.services.DumbEntityTransactionOutboxNonSequencialPublisherService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,14 +14,8 @@ import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
-import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalIntegrationTests {
@@ -36,11 +28,6 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
 
     @Autowired
     private DumbEntityTransactionOutboxWriteRepository repository;
-
-    @BeforeAll
-    public static void beforeAll() {
-        IntegrationTestConfiguration.configure();
-    }
 
     @BeforeEach
     public void beforeEach() {
@@ -77,7 +64,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
             snsAsyncClient.publish(
                 PublishRequest
                     .builder()
-                    .topicArn(System.getenv(DumbEntityTransactionOutboxNonSequencialPublisherService.DUMB_TOPIC_ARN))
+                    .topicArn(AwsConfig.getDumbTopicArn())
                     .message(savedEntityOne.getMessageBody())
                     .messageAttributes(savedEntityOne.buildMessageAttributesMap())
                     .build()))
@@ -97,7 +84,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalInteg
             snsAsyncClient.publish(
                 PublishRequest
                     .builder()
-                    .topicArn(System.getenv(DumbEntityTransactionOutboxNonSequencialPublisherService.DUMB_TOPIC_ARN))
+                    .topicArn(AwsConfig.getDumbTopicArn())
                     .message(savedEntityTwo.getMessageBody())
                     .messageAttributes(savedEntityTwo.buildMessageAttributesMap())
                     .build()))

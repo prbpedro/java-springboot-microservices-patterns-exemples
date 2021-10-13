@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class DumbEntityTransactionOutboxNonSequencialPublisher {
 
-    public static final int PUBLISHER_SCHEDULER_FIXED_DELAY_MILLIS = 300000;
+    public static final int PUBLISHER_SCHEDULER_FIXED_DELAY_MILLIS = 60000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DumbEntityTransactionOutboxNonSequencialPublisher.class);
 

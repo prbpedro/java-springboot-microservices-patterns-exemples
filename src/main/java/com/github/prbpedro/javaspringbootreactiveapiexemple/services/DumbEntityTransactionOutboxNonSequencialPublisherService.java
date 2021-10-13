@@ -1,5 +1,6 @@
 package com.github.prbpedro.javaspringbootreactiveapiexemple.services;
 
+import com.github.prbpedro.javaspringbootreactiveapiexemple.config.AwsConfig;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
 import lombok.AllArgsConstructor;
@@ -19,8 +20,6 @@ import software.amazon.awssdk.services.sns.model.PublishRequest;
 public class DumbEntityTransactionOutboxNonSequencialPublisherService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DumbEntityTransactionOutboxNonSequencialPublisherService.class);
-
-    public static final String DUMB_TOPIC_ARN = "DUMB_TOPIC_ARN";
 
     @Autowired
     public final DumbEntityTransactionOutboxWriteRepository repository;
@@ -50,7 +49,7 @@ public class DumbEntityTransactionOutboxNonSequencialPublisherService {
     private Mono<DumbEntityTransactionOutbox> sendEvent(DumbEntityTransactionOutbox e) {
         PublishRequest publishRequest = PublishRequest
             .builder()
-            .topicArn(System.getenv(DUMB_TOPIC_ARN))
+            .topicArn(AwsConfig.getDumbTopicArn())
             .message(e.getMessageBody())
             .messageAttributes(e.buildMessageAttributesMap())
             .build();
