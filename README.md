@@ -110,4 +110,5 @@ The application will expose 4 endpoints:
 To call the exposed endpoints, you can access the swagger-ui page via the address http://localhost:8080/swagger-ui.html in the browser.
 
 The application configures a scheduler that run every 10 seconds afters the finish of the last execution to get the DumbEntityTransactionOutbox entities not sent to the SNS Topic. DumbEntityTransactionOutboxNonSequencialPublisher class.
+
 The application also configures an idempotent SQS Queue Consumer to the events published to the SNS Topic and sent to the Sqs Queue through topic subscription. DumbQueueConsumer class.
