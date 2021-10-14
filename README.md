@@ -59,7 +59,7 @@ To initialize the infrastructure needed to the tests and the application, execut
 ```bash
 ./gradlew runAppInfrastructureComposeUp
 ```
-This will create an Instance of MySql with one database named dumb_db, one table named DumbEntity with two columns, an auto generated id and a value column. This is done by running the scripts / schema.sql file.
+This will create an Instance of MySql with one database named dumb_db with tree tables represented by the entities DumbEntity, SecondDumbEntity and DumbEntityTransactionOutbox. This is done by running the scripts / schema.sql file.
 The initialization process will also create a read only user by running the scripts / createreadonlyuser.sql file.
 
 A localstack container will also be created to simulate the needed AWS resources. The AWS resources are created if they not exist in the initialization of the application through the AwsConfig configuration class.
