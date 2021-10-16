@@ -24,7 +24,7 @@ This project implements the Messaging, Database Per Service, CQRS, Domain Event,
 - [Database Per Service](https://microservices.io/patterns/data/database-per-service.html)
   - This pattern is implemented through the use of a single database for writing operations by the application.
 - [CQRS](https://microservices.io/patterns/data/cqrs.html)
-  - This pattern is implemented through the use of two different connections to the database, one with only read data, and the other with read and write access. The following classes implements this pattern:
+  - This pattern is implemented through the use of two different connections to the database, one with only read access granted, and the other with read and write access granted. The following classes implements this pattern:
       - DumbEntityReadOnlyRepository
       - SecondDumbEntityReadOnlyRepository
       - DumbEntityTransactionOutboxWriteRepository
