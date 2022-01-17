@@ -3,10 +3,11 @@ package com.github.prbpedro.javaspringbootreactiveapiexemple.repositories;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.SecondDumbEntity;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.readonly.SecondDumbEntityReadOnlyRepository;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.SecondDumbEntityWriteRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.Assert;
+
 import reactor.test.StepVerifier;
 
 @SpringBootTest
@@ -24,9 +25,9 @@ public class SecondDumbEntityReadOnlyRepositoryIntegrationTest {
         writeRepository.save(SecondDumbEntity.builder().uuid("uuid").value(0L).build());
 
         StepVerifier
-            .create(repository.findByUuid("uuid"))
-            .expectNextCount(1)
-            .verifyComplete();
+                .create(repository.findByUuid("uuid"))
+                .expectNextCount(1)
+                .verifyComplete();
 
     }
 }

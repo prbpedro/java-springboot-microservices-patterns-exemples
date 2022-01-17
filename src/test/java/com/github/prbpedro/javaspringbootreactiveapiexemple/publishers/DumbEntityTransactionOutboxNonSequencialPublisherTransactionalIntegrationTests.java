@@ -8,20 +8,15 @@ import com.amazonaws.services.sns.model.PublishResult;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.config.AwsConfig;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.entities.DumbEntityTransactionOutbox;
 import com.github.prbpedro.javaspringbootreactiveapiexemple.repositories.write.DumbEntityTransactionOutboxWriteRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.util.Assert;
-import software.amazon.awssdk.services.sns.SnsAsyncClient;
-
-import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
 
 @SpringBootTest
 public class DumbEntityTransactionOutboxNonSequencialPublisherTransactionalIntegrationTests {
